@@ -24,7 +24,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-#region persistência
+#region persistence
 // Infra: EF Core + MySQL
 builder.Services.AddDbContext<UsersDbContext>(opt =>
 {
@@ -151,8 +151,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 #endregion
 
-// TODO: WithSummary / WithDescription
 #region endpoints
+// TODO: WithSummary / WithDescription
+#region Helthcheck, version
 // Endpoints básicos (para teste rápido)
 app.MapGet("/", () => new { service = "fcg-users-service", status = "ok" }).WithTags("Check");
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy" })).WithTags("Check");
@@ -161,6 +162,7 @@ app.MapGet("/version", () => new
     service = "fcg-users-service",
     version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0"
 }).WithTags("Check");
+#endregion
 
 #region Sem token
 app.MapPost("/api/users/register", async (
