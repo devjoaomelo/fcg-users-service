@@ -1,6 +1,5 @@
 ﻿using FCG.Users.Domain.Entities;
 
-
 namespace FCG.Users.Domain.Interfaces
 {
     public interface IUserCreationService
