@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  mysql-users:
+    image: mysql:8.0
+    container_name: mysql-users
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: fcg_users
+      MYSQL_USER: fcg
+      MYSQL_PASSWORD: fcgpwd
+    ports:
+      - "3307:3306"
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
