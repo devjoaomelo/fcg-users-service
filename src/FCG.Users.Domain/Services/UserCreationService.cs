@@ -7,10 +7,12 @@ namespace FCG.Users.Domain.Services;
 public sealed class UserCreationService : IUserCreationService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IPasswordHasher _hasher;
 
-    public UserCreationService(IUserRepository userRepository)
-    {
+    public UserCreationService(IUserRepository userRepository, IPasswordHasher hasher) 
+    { 
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
     }
 
     public async Task<User> CreateUserAsync(string name, string email, string password, CancellationToken ct = default)
@@ -20,7 +22,13 @@ public sealed class UserCreationService : IUserCreationService
 
         // ValueObjects
         var emailVo = Email.Create(email);
-        var passwordVo = Password.Create(password);
+        var plainPasswordVo = Password.Create(password);
+
+        // Gera o HASH da senha
+        var hashed = _hasher.Hash(plainPasswordVo.Value);
+
+        // passwordVo agora é o HASH
+        var passwordVo = Password.Create(hashed);
 
         if (await _userRepository.ExistsByEmailAsync(emailVo, ct))
             throw new InvalidOperationException($"User with email '{emailVo.Value}' already exists");
@@ -31,7 +39,7 @@ public sealed class UserCreationService : IUserCreationService
         if (isFirstUser)
             user.PromoteToAdmin();
 
-        // Não persiste, apenas cria a entidade
+        // Não persiste, apenas retorna a entidade pronta
         return user;
     }
 }
