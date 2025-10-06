@@ -11,8 +11,9 @@ public sealed class MySqlUserRepository : IUserRepository
     private readonly UsersDbContext _db;
     public MySqlUserRepository(UsersDbContext db) => _db = db;
 
+    // 👇 compare VO == VO (EF traduz via ValueComparer)
     public Task<User?> GetByEmailAsync(Email email, CancellationToken ct = default)
-        => _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email.Value == email.Value, ct);
+        => _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email, ct);
 
     public Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, ct);
@@ -20,8 +21,9 @@ public sealed class MySqlUserRepository : IUserRepository
     public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken ct = default)
         => await _db.Users.AsNoTracking().OrderBy(u => u.Name).ToListAsync(ct);
 
+    // 👇 nada de .Value aqui
     public Task<bool> ExistsByEmailAsync(Email email, CancellationToken ct = default)
-        => _db.Users.AnyAsync(u => u.Email.Value == email.Value, ct);
+        => _db.Users.AnyAsync(u => u.Email == email, ct);
 
     public Task<int> CountAsync(CancellationToken ct = default)
         => _db.Users.CountAsync(ct);
