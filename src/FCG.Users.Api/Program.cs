@@ -164,7 +164,7 @@ app.MapGet("/version", () => new
 }).WithTags("Check");
 #endregion
 
-#region Sem token
+
 app.MapPost("/api/users/register", async (
     CreateUserRequest req,
     CreateUserHandler handler,
@@ -172,7 +172,16 @@ app.MapPost("/api/users/register", async (
 {
     var res = await handler.Handle(req, ct);
     return Results.Created($"/api/users/{res.Id}", res);
-}).WithTags("Anonymous").AllowAnonymous();
+})
+.WithTags("Anonymous")
+.WithName("RegisterUser")
+.WithSummary("Registro de novo usuario")
+.WithDescription("Cria um novo usuario e retorna as informacoes incluindo o id guid")
+.Accepts<CreateUserRequest>("application/json")
+.Produces(StatusCodes.Status201Created)
+.Produces(StatusCodes.Status400BadRequest)
+.Produces(StatusCodes.Status409Conflict)
+.AllowAnonymous();
 
 app.MapPost("/api/users/login", async (
     LoginUserRequest req,
@@ -187,17 +196,34 @@ app.MapPost("/api/users/login", async (
         TimeSpan.FromHours(2),
         ct);
     return Results.Ok(res);
-}).WithTags("Anonymous").AllowAnonymous();
-#endregion
+})
+.WithTags("Anonymous")
+.WithName("LoginUser")
+.WithSummary("Autentica e pega o JWT")
+.WithDescription("Autentica as credencias do usuario e retorna o JWT para acessar rotas protegidas")
+.Accepts<LoginUserRequest>("application/json")
+.Produces(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status400BadRequest)
+.Produces(StatusCodes.Status401Unauthorized)
+.AllowAnonymous();
 
-#region Admin
+
+// ===== Admin =====
 app.MapGet("/api/users", async (
     ListUsersHandler handler,
     CancellationToken ct) =>
 {
     var res = await handler.Handle(new ListUsersRequest(), ct);
     return Results.Ok(res);
-}).WithTags("Admin").RequireAuthorization("AdminOnly");
+})
+.WithTags("Admin")
+.WithName("ListUsers")
+.WithSummary("Lista todos os usuarios")
+.WithDescription("Retorna paginado e completa lista de usuarios")
+.Produces(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status401Unauthorized)
+.Produces(StatusCodes.Status403Forbidden)
+.RequireAuthorization("AdminOnly");
 
 app.MapDelete("/api/users/{id:guid}", async (
     Guid id,
@@ -206,10 +232,19 @@ app.MapDelete("/api/users/{id:guid}", async (
 {
     var res = await handler.Handle(new DeleteUserRequest(id), ct);
     return res.Deleted ? Results.NoContent() : Results.NotFound();
-}).WithTags("Admin").RequireAuthorization("AdminOnly");
-#endregion
+})
+.WithTags("Admin")
+.WithName("DeleteUser")
+.WithSummary("Deleta usuario pelo id")
+.WithDescription("Deleta pelo identificador guid precisa ser admin")
+.Produces(StatusCodes.Status204NoContent)
+.Produces(StatusCodes.Status404NotFound)
+.Produces(StatusCodes.Status401Unauthorized)
+.Produces(StatusCodes.Status403Forbidden)
+.RequireAuthorization("AdminOnly");
 
-#region Dono ou Admin
+
+// ===== Self or Admin =====
 app.MapGet("/api/users/{id:guid}", async (
     Guid id,
     GetUserByIdHandler handler,
@@ -221,7 +256,16 @@ app.MapGet("/api/users/{id:guid}", async (
 
     var res = await handler.Handle(new GetUserByIdRequest(id), ct);
     return Results.Ok(res);
-}).WithTags("Self or Admin").RequireAuthorization();
+})
+.WithTags("Self or Admin")
+.WithName("GetUserById")
+.WithSummary("Get usuario pelo id")
+.WithDescription("Retorna detalhes do usuario pelo id, precisa ser owner ou admin")
+.Produces(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status401Unauthorized)
+.Produces(StatusCodes.Status403Forbidden)
+.Produces(StatusCodes.Status404NotFound)
+.RequireAuthorization();
 
 app.MapPut("/api/users/{id:guid}", async (
     Guid id,
@@ -236,7 +280,18 @@ app.MapPut("/api/users/{id:guid}", async (
     var req = new UpdateUserRequest(id, body.Name, body.NewPassword);
     var res = await handler.Handle(req, ct);
     return Results.Ok(res);
-}).WithTags("Self or Admin").RequireAuthorization();
+})
+.WithTags("Self or Admin")
+.WithName("UpdateUser")
+.WithSummary("Atualiza usuario pelo id")
+.WithDescription("atualiza o perfil (nome e senha) precisa ser o owner ou admin")
+.Accepts<UpdateUserRequest>("application/json")
+.Produces(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status400BadRequest)
+.Produces(StatusCodes.Status401Unauthorized)
+.Produces(StatusCodes.Status403Forbidden)
+.Produces(StatusCodes.Status404NotFound)
+.RequireAuthorization();
 
 app.MapGet("/api/users/me", (ClaimsPrincipal user) =>
 {
@@ -254,10 +309,16 @@ app.MapGet("/api/users/me", (ClaimsPrincipal user) =>
     return Results.Ok(response);
 })
 .WithTags("Self or Admin")
+.WithName("GetCurrentUser")
+.WithSummary("Get o user atual autenticado")
+.WithDescription("retorna nome email id role do usuario autenticado")
+.Produces(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status401Unauthorized)
 .RequireAuthorization();
-#endregion
 
 #endregion
+
+
 
 using (var scope = app.Services.CreateScope())
 {
