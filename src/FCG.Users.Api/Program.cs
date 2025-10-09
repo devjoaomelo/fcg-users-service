@@ -23,7 +23,7 @@ using System.Text;
 #endregion
 
 var builder = WebApplication.CreateBuilder(args);
-
+//teste
 #region persistence
 // Infra: EF Core + MySQL
 builder.Services.AddDbContext<UsersDbContext>(opt =>
