@@ -28,8 +28,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Infra: EF Core + MySQL
 builder.Services.AddDbContext<UsersDbContext>(opt =>
 {
-    var cs = builder.Configuration.GetConnectionString("UsersDb") ?? throw new InvalidOperationException("ConnectionStrings:UsersDb not configured");
-    opt.UseMySql(cs, ServerVersion.AutoDetect(cs));
+    var cs = builder.Configuration.GetConnectionString("UsersDb")
+             ?? Environment.GetEnvironmentVariable("ConnectionStrings__UsersDb")
+             ?? throw new InvalidOperationException("ConnectionStrings:UsersDb not configured");
+
+    opt.UseMySql(
+        cs,
+        ServerVersion.AutoDetect(cs),
+        my => my.MigrationsAssembly(typeof(UsersDbContext).Assembly.FullName) // ou "FCG.Users.Infra.Data"
+    );
 });
 #endregion
 
