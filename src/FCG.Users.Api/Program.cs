@@ -23,7 +23,12 @@ using System.Text;
 #endregion
 
 var builder = WebApplication.CreateBuilder(args);
-//teste
+
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 #region persistence
 // Infra: EF Core + MySQL
 builder.Services.AddDbContext<UsersDbContext>(opt =>
@@ -35,7 +40,7 @@ builder.Services.AddDbContext<UsersDbContext>(opt =>
     opt.UseMySql(
         cs,
         ServerVersion.AutoDetect(cs),
-        my => my.MigrationsAssembly(typeof(UsersDbContext).Assembly.FullName) // ou "FCG.Users.Infra.Data"
+        my => my.MigrationsAssembly(typeof(UsersDbContext).Assembly.FullName)
     );
 });
 #endregion
@@ -43,7 +48,6 @@ builder.Services.AddDbContext<UsersDbContext>(opt =>
 #region services
 // Repositório: (Domain -> Infra)
 builder.Services.AddScoped<IUserRepository, MySqlUserRepository>();
-
 
 // Domain: Services
 builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
@@ -129,6 +133,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
 #endregion
+
+
 
 #region builder e pipeline
 // Build
