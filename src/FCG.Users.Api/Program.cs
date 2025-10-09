@@ -140,10 +140,21 @@ builder.Services.AddAuthorization(options =>
 // Build
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+// }
+
+var enableSwagger = builder.Configuration.GetValue<bool>("Swagger:EnableUI", false);
+if (enableSwagger)
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "FCG API v1");
+        c.RoutePrefix = "swagger";
+    });
 }
 #region helpers
 static bool IsAdmin(ClaimsPrincipal user)
