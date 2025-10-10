@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Context;
@@ -158,6 +159,10 @@ builder.Services.AddAuthorization(options =>
 #endregion
 
 builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService(
+        serviceName: "FCG.Users.Api",                  
+        serviceVersion: "1.0.0",
+        serviceInstanceId: Environment.MachineName))
     .WithTracing(t =>
     {
         t.AddAspNetCoreInstrumentation(o =>
@@ -173,6 +178,12 @@ builder.Services.AddOpenTelemetry()
             {
                 activity?.SetTag("db.command", command.CommandText?.Split(' ').FirstOrDefault());
             };
+        })
+
+        .AddOtlpExporter(otlp =>
+        {
+            otlp.Endpoint = new Uri("http://127.0.0.1:4317");
+            otlp.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
         })
         .AddConsoleExporter();
     });
