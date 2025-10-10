@@ -228,16 +228,16 @@ app.UseSerilogRequestLogging(opts =>
     };
 });
 
-if (app.Environment.IsDevelopment())
+/*
+ * if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
     
 }
+ */
 
-
-/*
- * var enableSwagger = builder.Configuration.GetValue<bool>("Swagger:EnableUI", false);
+var enableSwagger = builder.Configuration.GetValue<bool>("Swagger:EnableUI", false);
 if (enableSwagger)
 {
     app.UseSwagger(c =>
@@ -258,7 +258,6 @@ if (enableSwagger)
         c.RoutePrefix = "swagger";
     });
 }
- */
 
 
 
