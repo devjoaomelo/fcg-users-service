@@ -140,11 +140,14 @@ builder.Services.AddAuthorization(options =>
 // Build
 var app = builder.Build();
 
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-// }
+/*
+ * if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+ */
+
 
 var enableSwagger = builder.Configuration.GetValue<bool>("Swagger:EnableUI", false);
 if (enableSwagger)
@@ -167,6 +170,8 @@ if (enableSwagger)
         c.RoutePrefix = "swagger";
     });
 }
+
+
 #region helpers
 static bool IsAdmin(ClaimsPrincipal user)
     => user.IsInRole("Admin");
