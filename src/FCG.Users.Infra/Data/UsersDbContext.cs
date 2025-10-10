@@ -11,6 +11,7 @@ public sealed class UsersDbContext : DbContext
     public UsersDbContext(DbContextOptions<UsersDbContext> options) : base(options) { }
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<StoredEvent> EventStore => Set<StoredEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,5 +84,20 @@ public sealed class UsersDbContext : DbContext
 
             e.HasIndex(x => x.Email).IsUnique();
         });
+
+        modelBuilder.Entity<StoredEvent>(e =>
+        {
+            e.ToTable("event_store");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.AggregateId).HasColumnName("aggregate_id");
+            e.Property(x => x.Type).HasColumnName("type").HasMaxLength(200);
+            e.Property(x => x.Data).HasColumnName("data");
+            e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
+            e.HasIndex(x => x.AggregateId);
+            e.HasIndex(x => x.CreatedAtUtc);
+        });
+
+        
     }
 }
