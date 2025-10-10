@@ -149,7 +149,18 @@ var app = builder.Build();
 var enableSwagger = builder.Configuration.GetValue<bool>("Swagger:EnableUI", false);
 if (enableSwagger)
 {
-    app.UseSwagger();
+    app.UseSwagger(c =>
+    {
+        c.PreSerializeFilters.Add((swagger, httpReq) =>
+        {
+            var path = httpReq.Path.Value ?? string.Empty;
+            var basePath = path.Replace("/swagger/v1/swagger.json", ""); 
+            swagger.Servers = new[]
+            {
+            new Microsoft.OpenApi.Models.OpenApiServer { Url = string.IsNullOrEmpty(basePath) ? "/" : basePath }
+        };
+        });
+    });
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("v1/swagger.json", "FCG API v1");
