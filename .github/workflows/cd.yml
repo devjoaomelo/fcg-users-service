@@ -13,12 +13,12 @@ jobs:
       AWS_ACCOUNT_ID: 536765581095
       ECR_REPO: fcg-users
       CLUSTER_NAME: fcg-cluster
-      SERVICE_NAME: fcg-users-svc
+      SERVICE_NAME: fcg-users-service
       TASKDEF_FAMILY: fcg-users-task
       CONTAINER_NAME: app
       IMAGE_TAG: ${{ github.sha }}
       CLUSTER_ARN: arn:aws:ecs:us-east-2:536765581095:cluster/fcg-cluster
-      SERVICE_ARN: arn:aws:ecs:us-east-2:536765581095:service/fcg-cluster/fcg-users-svc
+      SERVICE_ARN: arn:aws:ecs:us-east-2:536765581095:service/fcg-cluster/fcg-users-service
 
     steps:
       - name: Checkout
