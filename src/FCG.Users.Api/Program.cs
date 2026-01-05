@@ -297,7 +297,7 @@ app.UseAuthorization();
 // TODO: WithSummary / WithDescription
 #region Helthcheck, version
 // Endpoints básicos (para teste rápido)
-app.MapGet("/", () => new { service = "fcg-users-service", status = "ok" }).WithTags("Check");
+app.MapGet("/status", () => new { service = "fcg-users-service", status = "ok" }).WithTags("Check");
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy" })).WithTags("Check");
 app.MapGet("/version", () => new
 {
@@ -307,13 +307,13 @@ app.MapGet("/version", () => new
 #endregion
 
 
-app.MapPost("/api/users/register", async (
+app.MapPost("/register", async (
     CreateUserRequest req,
     CreateUserHandler handler,
     CancellationToken ct) =>
 {
     var res = await handler.Handle(req, ct);
-    return Results.Created($"/api/users/{res.Id}", res);
+    return Results.Created($"/{res.Id}", res);
 })
 .WithTags("Anonymous")
 .WithName("RegisterUser")
@@ -325,7 +325,7 @@ app.MapPost("/api/users/register", async (
 .Produces(StatusCodes.Status409Conflict)
 .AllowAnonymous();
 
-app.MapPost("/api/users/login", async (
+app.MapPost("/login", async (
     LoginUserRequest req,
     LoginUserHandler handler,
     IConfiguration cfg,
@@ -351,7 +351,7 @@ app.MapPost("/api/users/login", async (
 
 
 // ===== Admin =====
-app.MapGet("/api/users", async (
+app.MapGet("/", async (
     ListUsersHandler handler,
     CancellationToken ct) =>
 {
@@ -367,7 +367,7 @@ app.MapGet("/api/users", async (
 .Produces(StatusCodes.Status403Forbidden)
 .RequireAuthorization("AdminOnly");
 
-app.MapDelete("/api/users/{id:guid}", async (
+app.MapDelete("/{id:guid}", async (
     Guid id,
     DeleteUserHandler handler,
     CancellationToken ct) =>
@@ -387,7 +387,7 @@ app.MapDelete("/api/users/{id:guid}", async (
 
 
 // ===== Self or Admin =====
-app.MapGet("/api/users/{id:guid}", async (
+app.MapGet("/{id:guid}", async (
     Guid id,
     GetUserByIdHandler handler,
     ClaimsPrincipal user,
@@ -409,7 +409,7 @@ app.MapGet("/api/users/{id:guid}", async (
 .Produces(StatusCodes.Status404NotFound)
 .RequireAuthorization();
 
-app.MapPut("/api/users/{id:guid}", async (
+app.MapPut("/{id:guid}", async (
     Guid id,
     UpdateUserRequest body,
     UpdateUserHandler handler,
@@ -435,7 +435,7 @@ app.MapPut("/api/users/{id:guid}", async (
 .Produces(StatusCodes.Status404NotFound)
 .RequireAuthorization();
 
-app.MapGet("/api/users/me", (ClaimsPrincipal user) =>
+app.MapGet("/me", (ClaimsPrincipal user) =>
 {
     if (!user.Identity?.IsAuthenticated ?? true)
         return Results.Unauthorized();
@@ -460,7 +460,7 @@ app.MapGet("/api/users/me", (ClaimsPrincipal user) =>
 
 #endregion
 
-app.MapGet("/api/users/{id:guid}/events",
+app.MapGet("/{id:guid}/events",
     async (Guid id, IEventStore es, CancellationToken ct) =>
     {
         var list = await es.ListByAggregateAsync(id, ct);
