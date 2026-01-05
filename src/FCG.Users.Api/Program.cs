@@ -192,6 +192,8 @@ builder.Services.AddOpenTelemetry()
 // Build
 var app = builder.Build();
 
+app.UsePathBase("/api/users");
+
 app.MapHealthChecks("/health/db");
 
 app.Use(async (ctx, next) =>
