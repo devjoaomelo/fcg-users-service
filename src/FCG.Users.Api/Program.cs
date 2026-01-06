@@ -478,6 +478,6 @@ app.MapGet("/boom", () =>
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-    await db.Database.MigrateAsync();
+    await db.Database.EnsureCreatedAsync();
 }
 app.Run();
