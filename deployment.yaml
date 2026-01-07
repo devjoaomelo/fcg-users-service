@@ -1,0 +1,63 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-api
+  namespace: fcg
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: users-api
+  template:
+    metadata:
+      labels:
+        app: users-api
+    spec:
+      containers:
+      - name: users-api
+        image: 536765581095.dkr.ecr.us-east-2.amazonaws.com/fcg-users@sha256:a2db6ec280a28af28e241ef38bb2c025c841310930a2283adc1ce0fb4d3dcdbb
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://+:8080
+        - name: ConnectionStrings__UsersDb
+          valueFrom:
+            configMapKeyRef:
+              name: fcg-config
+              key: conn-users
+        - name: Jwt__Issuer
+          valueFrom:
+            configMapKeyRef:
+              name: fcg-config
+              key: jwt-issuer
+        - name: Jwt__Audience
+          valueFrom:
+            configMapKeyRef:
+              name: fcg-config
+              key: jwt-audience
+        - name: Jwt__Key
+          valueFrom:
+            secretKeyRef:
+              name: fcg-secrets
+              key: jwt-key
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 250m
+          limits:
+            memory: 512Mi
+            cpu: 500m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-api
+  namespace: fcg
+spec:
+  type: LoadBalancer
+  selector:
+    app: users-api
+  ports:
+  - port: 80
+    targetPort: 8080
