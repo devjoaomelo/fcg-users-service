@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fcg-users-svc
+  namespace: default
+  labels:
+    app: fcg-users
+spec:
+  type: LoadBalancer
+  selector:
+    app: fcg-users
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  sessionAffinity: None
